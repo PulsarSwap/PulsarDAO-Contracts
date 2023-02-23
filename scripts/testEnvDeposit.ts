@@ -14,19 +14,19 @@ async function main(): Promise<void> {
   const [owner] = await ethers.getSigners();
 
   const lockAddress = getENV(hre, "lock");
-  const sosAddress = getENV(hre, "sos");
+  const pulAddress = getENV(hre, "pul");
 
-  const lock = (await ethers.getContractFactory("OpenDAOLock")).attach(lockAddress);
-  const sos = (await ethers.getContractFactory("MyERC20")).attach(sosAddress);
+  const lock = (await ethers.getContractFactory("PulsarDAOLock")).attach(lockAddress);
+  const pul = (await ethers.getContractFactory("MyERC20")).attach(pulAddress);
 
-  await sos.connect(owner).mint(utils.parseEther("100"), {
+  await pul.connect(owner).mint(utils.parseEther("100"), {
     nonce: await getNonce(owner),
     maxFeePerGas: utils.parseUnits("200", "gwei"),
     maxPriorityFeePerGas: utils.parseUnits("1", "gwei"),
     gasLimit: 1000000,
   });
 
-  await sos.connect(owner).approve(lock.address, utils.parseEther("1000000"), {
+  await pul.connect(owner).approve(lock.address, utils.parseEther("1000000"), {
     nonce: await getNonce(owner),
     maxFeePerGas: utils.parseUnits("200", "gwei"),
     maxPriorityFeePerGas: utils.parseUnits("1", "gwei"),

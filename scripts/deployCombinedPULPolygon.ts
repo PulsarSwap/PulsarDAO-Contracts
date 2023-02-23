@@ -7,27 +7,27 @@ const ethers = hre.ethers;
 const utils = ethers.utils;
 
 /**
-npx hardhat --network mumbai run scripts/deployCombinedSOSPolygon.ts
+npx hardhat --network mumbai run scripts/deployCombinedPULPolygon.ts
 
-npx hardhat --network polygon run scripts/deployCombinedSOSPolygon.ts
+npx hardhat --network polygon run scripts/deployCombinedPULPolygon.ts
  */
 async function main() {
     const [a, owner] = await ethers.getSigners();
     expect(owner.address.toLowerCase()).eq("0x0dee503261FA153BC9372f5b201C56Ead3b33721".toLowerCase());
 
-    const OpenDAOCombinedFactory = await ethers.getContractFactory("OpenDAOCombinedPolygon");
-    const OpenDAOCombinedPolygon = await OpenDAOCombinedFactory.connect(owner).deploy({
+    const PulsarDAOCombinedFactory = await ethers.getContractFactory("PulsarDAOCombinedPolygon");
+    const PulsarDAOCombinedPolygon = await PulsarDAOCombinedFactory.connect(owner).deploy({
         maxFeePerGas: utils.parseUnits("120", "gwei"),
         maxPriorityFeePerGas: utils.parseUnits("30", "gwei"),
     });
 
-    console.log("Combined SOS contract address:", OpenDAOCombinedPolygon.address);
+    console.log("Combined PUL contract address:", PulsarDAOCombinedPolygon.address);
     console.log(
-        "npx hardhat --network %s verify --contract contracts/OpenDAOCombinedPolygon.sol:OpenDAOCombinedPolygon %s",
+        "npx hardhat --network %s verify --contract contracts/PulsarDAOCombinedPolygon.sol:PulsarDAOCombinedPolygon %s",
         hre.network.name,
-        OpenDAOCombinedPolygon.address,
+        PulsarDAOCombinedPolygon.address,
     );
-    await OpenDAOCombinedPolygon.deployed();
+    await PulsarDAOCombinedPolygon.deployed();
 }
 
 main().catch((error) => {

@@ -16,22 +16,22 @@ async function main(): Promise<void> {
   const utils = ethers.utils;
   const [owner] = await ethers.getSigners();
 
-  const sosAddress = getENV(hre, "sos");
+  const pulAddress = getENV(hre, "pul");
   const duration = Number(getENV(hre, "Duration"));
 
-  const lock = await (await ethers.getContractFactory("OpenDAOLock"))
+  const lock = await (await ethers.getContractFactory("PulsarDAOLock"))
     .connect(owner)
-    .deploy(sosAddress, duration, {
+    .deploy(pulAddress, duration, {
       maxFeePerGas: utils.parseUnits("200", "gwei"),
       maxPriorityFeePerGas: utils.parseUnits("1.01", "gwei"),
       nonce: await getNonce(owner),
     });
   console.log("deploying to:", lock.address);
   console.log(
-    "npx hardhat --network %s verify --contract contracts/OpenDAOLock.sol:OpenDAOLock %s %s %s",
+    "npx hardhat --network %s verify --contract contracts/PulsarDAOLock.sol:PulsarDAOLock %s %s %s",
     hre.network.name,
     lock.address,
-    sosAddress,
+    pulAddress,
     duration
   );
   await lock.deployed();

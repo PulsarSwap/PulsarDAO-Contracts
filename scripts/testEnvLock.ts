@@ -13,7 +13,7 @@ async function main(): Promise<void> {
   const utils = ethers.utils;
   const [owner] = await ethers.getSigners();
   const lockAddress = getENV(hre, "lock");
-  const lock = (await ethers.getContractFactory("OpenDAOLock")).attach(lockAddress);
+  const lock = (await ethers.getContractFactory("PulsarDAOLock")).attach(lockAddress);
   const nonce = await getNonce(owner);
   await lock.connect(owner).lock(utils.parseEther("100"), {
     nonce,

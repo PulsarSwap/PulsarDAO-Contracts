@@ -13,7 +13,7 @@ ts-node scripts/getBalance.ts
 async function main() {
     const addr = "0x41cbac56ea5ec878135082f0f8d9a232a854447e";
     const provider = new ethers.providers.JsonRpcProvider(URL);
-    const cSOS = new ethers.Contract(addr, [
+    const cPUL = new ethers.Contract(addr, [
         "function balanceOf(address account) external view returns (uint256)"
     ], provider);
 
@@ -22,7 +22,7 @@ async function main() {
     for (let i = 0; i < 10; ++i) {
         const delta: number = i * 24 * 60 * 60 / 14;
         const blockTag = Math.floor(currentBn - delta);
-        const balance = await cSOS.balanceOf(process.env.DEMO_ADDR || "", { blockTag });
+        const balance = await cPUL.balanceOf(process.env.DEMO_ADDR || "", { blockTag });
         console.log("%s %s %s", i, blockTag, utils.formatEther(balance));
     }
 

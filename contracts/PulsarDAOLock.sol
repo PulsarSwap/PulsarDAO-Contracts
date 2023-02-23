@@ -5,11 +5,11 @@ pragma solidity ^0.8.9;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-contract OpenDAOLock {
+contract PulsarDAOLock {
     using SafeERC20 for IERC20;
 
     // mainnet 0x3b484b82567a09e2588A13D54D032153f0c0aEe0
-    IERC20 public immutable sosToken;
+    IERC20 public immutable pulToken;
     uint256 public immutable lockDuration;
 
     struct Lock {
@@ -19,14 +19,14 @@ contract OpenDAOLock {
 
     mapping(address => Lock) public locks;
 
-    constructor(IERC20 _sosToken, uint256 _lockDuration) {
-        sosToken = _sosToken;
+    constructor(IERC20 _pulToken, uint256 _lockDuration) {
+        pulToken = _pulToken;
         lockDuration = _lockDuration;
     }
 
     function lock(uint256 _amount) external {
-        require(_amount > 0, "OpenDAOLock: Invalid amount");
-        sosToken.safeTransferFrom(msg.sender, address(this), _amount);
+        require(_amount > 0, "PulsarDAOLock: Invalid amount");
+        pulToken.safeTransferFrom(msg.sender, address(this), _amount);
         Lock memory _lock = locks[msg.sender];
         _lock.amount += uint192(_amount);
         _lock.unlockTime = uint64(block.timestamp + lockDuration);
@@ -34,12 +34,12 @@ contract OpenDAOLock {
     }
 
     function unlock(uint256 _amount) external {
-        require(_amount > 0, "OpenDAOLock: Invalid amount");
+        require(_amount > 0, "PulsarDAOLock: Invalid amount");
         Lock memory _lock = locks[msg.sender];
-        require(block.timestamp >= _lock.unlockTime, "OpenDAOLock: Assets locked");
-        require(uint256(_lock.amount) >= _amount, "OpenDAOLock: Insufficient amount to withdraw");
+        require(block.timestamp >= _lock.unlockTime, "PulsarDAOLock: Assets locked");
+        require(uint256(_lock.amount) >= _amount, "PulsarDAOLock: Insufficient amount to withdraw");
         locks[msg.sender].amount -= uint192(_amount);
-        sosToken.safeTransfer(msg.sender, _amount);
+        pulToken.safeTransfer(msg.sender, _amount);
     }
 
     function locked(address _account) external view returns(uint256) {

@@ -7,9 +7,8 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/math/SafeCast.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "./BlockTimeOverridable.sol";
 
-contract OpenDAOStakingDev is ERC20("veSOS", "veSOS"), Ownable, BlockTimeOverridable {
+contract PulsarDAOStaking is ERC20("vePUL", "vePUL"), Ownable {
     using SafeERC20 for IERC20;
     using SafeCast for int256;
     using SafeCast for uint256;
@@ -23,33 +22,33 @@ contract OpenDAOStakingDev is ERC20("veSOS", "veSOS"), Ownable, BlockTimeOverrid
         uint128 totalReward;
     }
 
-    IERC20 public sos;
+    IERC20 public pul;
     Config public config;
 
     /*
-     * Construct an OpenDAOStaking contract.
+     * Construct an PulsarDAOStaking contract.
      *
-     * @param _sos the contract address of SOS token
+     * @param _pul the contract address of PUL token
      * @param _periodStart the initial start time of rewards period
      * @param _rewardsDuration the duration of rewards in seconds
      */
-    constructor(IERC20 _sos, uint64 _periodStart, uint64 _rewardsDuration) {
-        require(address(_sos) != address(0), "OpenDAOStaking: _sos cannot be the zero address");
-        sos = _sos;
+    constructor(IERC20 _pul, uint64 _periodStart, uint64 _rewardsDuration) {
+        require(address(_pul) != address(0), "PulsarDAOStaking: _pul cannot be the zero address");
+        pul = _pul;
         setPeriod(_periodStart, _rewardsDuration);
     }
 
     /*
-     * Add SOS tokens to the reward pool.
+     * Add PUL tokens to the reward pool.
      *
-     * @param _sosAmount the amount of SOS tokens to add to the reward pool
+     * @param _pulAmount the amount of PUL tokens to add to the reward pool
      */
-    function addRewardSOS(uint256 _sosAmount) external {
+    function addRewardPUL(uint256 _pulAmount) external {
         Config memory cfg = config;
-        require(blockTime() < cfg.periodFinish, "OpenDAOStaking: Adding rewards is forbidden");
+        require(block.timestamp < cfg.periodFinish, "PulsarDAOStaking: Adding rewards is forbidden");
 
-        sos.safeTransferFrom(msg.sender, address(this), _sosAmount);
-        cfg.totalReward += _sosAmount.toUint128();
+        pul.safeTransferFrom(msg.sender, address(this), _pulAmount);
+        cfg.totalReward += _pulAmount.toUint128();
         config = cfg;
     }
 
@@ -61,11 +60,11 @@ contract OpenDAOStakingDev is ERC20("veSOS", "veSOS"), Ownable, BlockTimeOverrid
      * @param _rewardsDuration the duration of rewards in seconds
      */
     function setPeriod(uint64 _periodStart, uint64 _rewardsDuration) public onlyOwner {
-        require(_periodStart >= blockTime(), "OpenDAOStaking: _periodStart shouldn't be in the past");
-        require(_rewardsDuration > 0, "OpenDAOStaking: Invalid rewards duration");
+        require(_periodStart >= block.timestamp, "PulsarDAOStaking: _periodStart shouldn't be in the past");
+        require(_rewardsDuration > 0, "PulsarDAOStaking: Invalid rewards duration");
 
         Config memory cfg = config;
-        require(cfg.periodFinish < blockTime(), "OpenDAOStaking: The last reward period should be finished before setting a new one");
+        require(cfg.periodFinish < block.timestamp, "PulsarDAOStaking: The last reward period should be finished before setting a new one");
 
         uint64 _periodFinish = _periodStart + _rewardsDuration;
         config.periodStart = _periodStart;
@@ -74,12 +73,12 @@ contract OpenDAOStakingDev is ERC20("veSOS", "veSOS"), Ownable, BlockTimeOverrid
     }
 
     /*
-     * Returns the staked sos + release rewards
+     * Returns the staked pul + release rewards
      *
-     * @returns amount of available sos
+     * @returns amount of available pul
      */
-    function getSOSPool() public view returns(uint256) {
-        return sos.balanceOf(address(this)) - frozenRewards();
+    function getPULPool() public view returns(uint256) {
+        return pul.balanceOf(address(this)) - frozenRewards();
     }
 
     /*
@@ -90,7 +89,7 @@ contract OpenDAOStakingDev is ERC20("veSOS", "veSOS"), Ownable, BlockTimeOverrid
     function frozenRewards() public view returns(uint256) {
         Config memory cfg = config;
 
-        uint256 time = blockTime();
+        uint256 time = block.timestamp;
         uint256 remainingTime;
         uint256 duration = uint256(cfg.periodFinish) - uint256(cfg.periodStart);
 
@@ -106,42 +105,42 @@ contract OpenDAOStakingDev is ERC20("veSOS", "veSOS"), Ownable, BlockTimeOverrid
     }
 
     /*
-     * Staking specific amount of SOS token and get corresponding amount of veSOS
+     * Staking specific amount of PUL token and get corresponding amount of vePUL
      * as the user's share in the pool
      *
-     * @param _sosAmount
+     * @param _pulAmount
      */
-    function enter(uint256 _sosAmount) external {
-        require(_sosAmount > 0, "OpenDAOStaking: Should at least stake something");
+    function enter(uint256 _pulAmount) external {
+        require(_pulAmount > 0, "PulsarDAOStaking: Should at least stake something");
 
-        uint256 totalSOS = getSOSPool();
+        uint256 totalPUL = getPULPool();
         uint256 totalShares = totalSupply();
 
-        sos.safeTransferFrom(msg.sender, address(this), _sosAmount);
+        pul.safeTransferFrom(msg.sender, address(this), _pulAmount);
 
-        if (totalShares == 0 || totalSOS == 0) {
-            _mint(msg.sender, _sosAmount);
+        if (totalShares == 0 || totalPUL == 0) {
+            _mint(msg.sender, _pulAmount);
         } else {
-            uint256 _share = _sosAmount * totalShares / totalSOS;
+            uint256 _share = _pulAmount * totalShares / totalPUL;
             _mint(msg.sender, _share);
         }
     }
 
     /*
-     * Redeem specific amount of veSOS to SOS tokens according to the user's share in the pool.
-     * veSOS will be burnt.
+     * Redeem specific amount of vePUL to PUL tokens according to the user's share in the pool.
+     * vePUL will be burnt.
      *
      * @param _share
      */
     function leave(uint256 _share) external {
-        require(_share > 0, "OpenDAOStaking: Should at least unstake something");
+        require(_share > 0, "PulsarDAOStaking: Should at least unstake something");
 
-        uint256 totalSOS = getSOSPool();
+        uint256 totalPUL = getPULPool();
         uint256 totalShares = totalSupply();
 
         _burn(msg.sender, _share);
 
-        uint256 _sosAmount = _share * totalSOS / totalShares;
-        sos.safeTransfer(msg.sender, _sosAmount);
+        uint256 _pulAmount = _share * totalPUL / totalShares;
+        pul.safeTransfer(msg.sender, _pulAmount);
     }
 }

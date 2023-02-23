@@ -14,26 +14,26 @@ async function main(): Promise<void> {
   const [owner] = await ethers.getSigners();
 
   const lockAddress = getENV(hre, "lock");
-  const sosAddress = getENV(hre, "sos");
+  const pulAddress = getENV(hre, "pul");
 
-  const lock = (await ethers.getContractFactory("OpenDAOLock")).attach(lockAddress);
-  const sos = (await ethers.getContractFactory("MyERC20")).attach(sosAddress);
+  const lock = (await ethers.getContractFactory("PulsarDAOLock")).attach(lockAddress);
+  const pul = (await ethers.getContractFactory("MyERC20")).attach(pulAddress);
 
   const [
     locked,
-    ownerSOS,
-    lockSOS,
+    ownerPUL,
+    lockPUL,
     allowance,
   ] = await Promise.all([
     lock.locked(owner.address),
-    sos.balanceOf(owner.address),
-    sos.balanceOf(lock.address),
-    sos.allowance(owner.address, lock.address),
+    pul.balanceOf(owner.address),
+    pul.balanceOf(lock.address),
+    pul.allowance(owner.address, lock.address),
   ]);
 
   console.log("owner locked %s", utils.formatEther(locked));
-  console.log("owner SOS %s", utils.formatEther(ownerSOS));
-  console.log("lock contract SOS %s", utils.formatEther(lockSOS));
+  console.log("owner PUL %s", utils.formatEther(ownerPUL));
+  console.log("lock contract PUL %s", utils.formatEther(lockPUL));
   console.log("allowance %s", utils.formatEther(allowance));
 }
 

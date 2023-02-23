@@ -5,20 +5,20 @@ import { ethers } from "hardhat";
 const utils = ethers.utils;
 
 /**
-npx hardhat --network rinkeby run scripts/deployCombinedSOS.ts
-npx hardhat --network rinkeby verify --contract contracts/OpenDAOCombined.sol:OpenDAOCombined 0x00
+npx hardhat --network rinkeby run scripts/deployCombinedPUL.ts
+npx hardhat --network rinkeby verify --contract contracts/PulsarDAOCombined.sol:PulsarDAOCombined 0x00
  */
 async function main() {
     const [owner] = await ethers.getSigners();
 
-    const OpenDAOCombinedFactory = await ethers.getContractFactory("OpenDAOCombined");
-    const openDAOCombined = await OpenDAOCombinedFactory.connect(owner).deploy({
+    const PulsarDAOCombinedFactory = await ethers.getContractFactory("PulsarDAOCombined");
+    const PulsarDAOCombined = await PulsarDAOCombinedFactory.connect(owner).deploy({
         maxFeePerGas: utils.parseUnits("120", "gwei"),
         maxPriorityFeePerGas: utils.parseUnits("1.18", "gwei"),
         gasLimit: 3519404,
     });
 
-    console.log("Combined SOS contract address:", openDAOCombined.address);
+    console.log("Combined PUL contract address:", PulsarDAOCombined.address);
 }
 
 main().catch((error) => {
